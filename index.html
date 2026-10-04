@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일용소득 계산기</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; display: flex; justify-content: center; }
+        .calculator { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { width: 100%; padding: 12px; background-color: #2db400; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        button:hover { background-color: #269a00; }
+        .result { margin-top: 20px; padding: 15px; background: #f9f9f9; border-left: 5px solid #2db400; border-radius: 3px; display: none; }
+        .result p { margin: 5px 0; font-size: 15px; }
+        .highlight { font-weight: bold; color: #d9534f; }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>일용소득 계산기</h2>
+    <label for="dailyWage">일당 (원):</label>
+    <input type="number" id="dailyWage" placeholder="예: 200000" value="150000">
+
+    <label for="workingDays">근무 일수 (일):</label>
+    <input type="number" id="workingDays" placeholder="예: 10" value="1">
+
+    <button onclick="calculate()">계산하기</button>
+
+    <div class="result" id="resultBox">
+        <p>총 급여액: <span id="totalWage">0</span>원</p>
+        <p>비과세 소득공제 (일 15만 원): <span id="taxDeduction">0</span>원</p>
+        <p>소득세 (원천징수 2.7%): <span id="incomeTax" class="highlight">0</span>원</p>
+        <p>지방소득세 (소득세의 10%): <span id="localTax" class="highlight">0</span>원</p>
+        <hr>
+        <p><strong>실령 예상액: <span id="netPay" style="color:#2db400; font-size: 18px;">0</span>원</strong></p>
+    </div>
+</div>
+
+<script>
+function calculate() {
+    const dailyWage = parseFloat(document.getElementById('dailyWage').value) || 0;
+    const workingDays = parseInt(document.getElementById('workingDays').value) || 0;
+    
+    const totalWage = dailyWage * workingDays;
+    
+    // 일용근로자 소득공제: 일 15만 원
+    // 일당이 15만 원 이하이면 세금이 없습니다.
+    let totalIncomeTax = 0;
+    
+    if (dailyWage > 150000) {
+        // 일별 소득세 = (일당 - 15만 원) * 6% * (1 - 55% 세액공제) -> 실질 세율 2.7%
+        const dailyIncomeTax = Math.floor((dailyWage - 150000) * 0.06 * 0.45);
+        totalIncomeTax = dailyIncomeTax * workingDays;
+    }
+    
+    const totalLocalTax = Math.floor(totalIncomeTax * 0.1);
+    const totalTax = totalIncomeTax + totalLocalTax;
+    const netPay = totalWage - totalTax;
+    
+    // 결과 화면에 표시
+    document.getElementById('totalWage').innerText = totalWage.toLocaleString();
+    document.getElementById('taxDeduction').innerText = (Math.min(dailyWage, 150000) * workingDays).toLocaleString();
+    document.getElementById('incomeTax').innerText = totalIncomeTax.toLocaleString();
+    document.getElementById('localTax').innerText = totalLocalTax.toLocaleString();
+    document.getElementById('netPay').innerText = netPay.toLocaleString();
+    
+    document.getElementById('resultBox').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
